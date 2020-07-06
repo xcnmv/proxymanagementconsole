@@ -38,7 +38,7 @@ Begin{
 		EXIT 2
 	}
 	Function StopProxy{
-		"Killing all proxy connections"
+		Write-Host "Killing all proxy connections" -ForegroundColor DarkGreen
 		Get-Process *ssh* | Stop-Process -Force
 	}
 	Function StartProxy{
@@ -46,7 +46,7 @@ Begin{
 			[String]$Url,
 			[String]$User
 		)
-		"Starting Proxy Connection"
+		Write-Host "Starting Proxy Connection" -ForegroundColor DarkGreen
 		ssh -D 1337 -q -C -N -f $($user)@$($url)
 	}
 	Function isProxyAlreadyRunning{
@@ -130,15 +130,15 @@ Begin{
 		[void]$Form.ShowDialog()
 	}
 	Function AutoUpdate{
-		"...Updating..."
+		Write-Host "...Updating..." -ForegroundColor DarkGray
 		try{
 			$loc = Get-Location | select -ExpandProperty Path
 			Set-Location $PSScriptRoot
 			git pull origin master 1>$null 2>$null
-			"Update successful"
+			Write-Host "Update successful" -ForegroundColor DarkGray
 		}
 		catch{
-			"Update failed"
+			Write-Host "Update failed" -ForegroundColor Red
 		}
 		Finally{
 			Set-Location $loc
@@ -154,17 +154,17 @@ Process{
 		AutoUpdate
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
-		"Starting GUI"
+		Write-Host "Starting GUI" -ForegroundColor DarkGray
 		GUI
 	}
 	else{
 		$stopped=$null
 		if($Status){
 			if(isProxyAlreadyRunning){
-				"Proxy is already running"
+				Write-Host "Proxy is already running" -ForegroundColor DarkGreen
 			}
 			else{
-				"Proxy is not detected"
+				Write-Host "Proxy is not detected" -ForegroundColor DarkGreen
 			}
 		}
 		if(($Stop -or $Restart -or $ConditionalRestart) -and (isProxyAlreadyRunning)){
@@ -173,7 +173,7 @@ Process{
 		}
 		if($ConditionalStart -or $ConditionalRestart) {
 			if($stopped){
-				"Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection."
+				Write-Host "Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection." -ForegroundColor DarkGray
 				sleep 5
 			}
 			if (!(isProxyAlreadyRunning)){
@@ -182,12 +182,12 @@ Process{
 		}
 		if($Start -or $Restart){
 			if($stopped){
-				"Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection."
+				Write-Host "Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection." -ForegroundColor DarkGray
 				sleep 5
 			}
 			StartProxy -User $User -Url $Url
 		}
-		"All done, exiting..."
+		Write-Host "All done, exiting..." -ForegroundColor DarkGray
 		sleep 5
 	}
 }
