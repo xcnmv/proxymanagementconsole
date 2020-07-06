@@ -1,0 +1,180 @@
+
+
+[CmdletBinding(DefaultParameterSetName='Help')]
+param (
+	[Parameter(ParameterSetName='ConditionalStart')]
+	[switch]$ConditionalStart,
+	[Parameter(ParameterSetName='Start')]
+	[switch]$Start,
+	[Parameter(ParameterSetName='Restart')]
+	[switch]$Restart,
+	[Parameter(ParameterSetName='ConditionalRestart')]
+	[switch]$ConditionalRestart,
+	[Parameter(ParameterSetName='Stop')]
+	[switch]$Stop,
+	[Parameter(ParameterSetName='Status')]
+	[switch]$Status,
+	[Parameter(ParameterSetName='Help')]
+	[switch]$Help,
+	[Parameter(ParameterSetName='GUI')]
+	[Switch]$GUI,
+	[Parameter(mandatory=$true,ParameterSetName='ConditionalStart')]
+	[Parameter(mandatory=$true,ParameterSetName='Start')]
+	[Parameter(mandatory=$true,ParameterSetName='Restart')]
+	[Parameter(mandatory=$true,ParameterSetName='ConditionalRestart')]
+	[Parameter(mandatory=$true,ParameterSetName='GUI')]
+	[String]$Url,
+	[Parameter(mandatory=$true,ParameterSetName='ConditionalStart')]
+	[Parameter(mandatory=$true,ParameterSetName='Start')]
+	[Parameter(mandatory=$true,ParameterSetName='Restart')]
+	[Parameter(mandatory=$true,ParameterSetName='ConditionalRestart')]
+	[Parameter(mandatory=$true,ParameterSetName='GUI')]
+	[String]$User,
+	[Parameter(ParameterSetName='ConditionalStart')]
+	[Parameter(ParameterSetName='Start')]
+	[Parameter(ParameterSetName='Restart')]
+	[Parameter(ParameterSetName='ConditionalRestart')]
+	[Parameter(ParameterSetName='Stop')]
+	[Parameter(ParameterSetName='Status')]
+	[Parameter(ParameterSetName='GUI')]
+	[String]$source
+)
+
+Begin{
+	if($PSCmdlet.ParameterSetName -contains 'Help'){
+		Get-Help $(Join-Path $PSScriptRoot $MyInvocation.MyCommand.Name) -ShowWindow
+		EXIT 2
+	}
+	Function StopProxy{
+		"Killing all proxy connections"
+		Get-Process *ssh* | Stop-Process -Force
+	}
+	Function StartProxy{
+		param(
+			[String]$Url,
+			[String]$User
+		)
+		"Starting Proxy Connection"
+		ssh -D 1337 -q -C -N -f $($user)@$($url)
+	}
+	Function isProxyAlreadyRunning{
+		if(Get-Process *ssh*){
+			return $true
+		}
+	}
+	Function GUI{
+		param(
+			[String]$Url,
+			[String]$User
+		)
+		<# This form was created using POSHGUI.com  a free online gui designer for PowerShell
+		.NAME
+		    Proxy Management Console
+		#>
+
+		Add-Type -AssemblyName System.Windows.Forms
+		[System.Windows.Forms.Application]::EnableVisualStyles()
+
+		$Form                            = New-Object system.Windows.Forms.Form
+		$Form.ClientSize                 = New-Object System.Drawing.Point(224,61)
+		$Form.text                       = "Proxy Management Console"
+		$Form.TopMost                    = $false
+		$Form.MaximizeBox				 = $false
+		$Form.MinimizeBox				 = $false
+		$Form.FormBorderStyle			 = 'FixedSingle'
+
+		$CheckBox						 = New-Object system.Windows.Forms.CheckBox
+		$CheckBox.Text					 = 'Always on top'
+		$CheckBox.AutoSize				 = $false
+		$CheckBox.Width					 = 205
+		$CheckBox.Height				 = 20
+		$CheckBox.location               = New-Object System.Drawing.Point(7,7)
+		$CheckBox.Font                   = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+		$CheckBox.Checked				 = $false
+
+		$Button                          = New-Object system.Windows.Forms.Button
+		$Button.text                     = "... checking ..."
+		$Button.width                    = 100
+		$Button.height                   = 30
+		$Button.location                 = New-Object System.Drawing.Point(117,24)
+		$Button.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+	
+		$StatuValue                      = New-Object system.Windows.Forms.Label
+		$StatuValue.text                 = "... checking ..."
+		$StatuValue.AutoSize             = $true
+		$StatuValue.width                = 25
+		$StatuValue.height               = 10
+		$StatuValue.MaximumSize          = New-Object System.Drawing.Size(103,20)
+		$StatuValue.TextAlign            = "Center"
+		$StatuValue.location             = New-Object System.Drawing.Point(7,34)
+		$StatuValue.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+		
+		$timer = New-Object System.Windows.Forms.Timer
+		$timer.Interval = 500
+		$timer.add_tick({
+			$Form.TopMost = $CheckBox.Checked
+			if(isProxyAlreadyRunning){
+				$StatuValue.text = "Proxy is Active"
+				$Button.text = 'Stop'
+			}
+			else{
+				$StatuValue.text = "Proxy not found"
+				$Button.text = 'Start'
+			}
+			})
+
+		$Form.controls.AddRange(@($Button,$StatuValue,$CheckBox))
+
+		$Button.Add_Click({ 
+			if($Button.text -eq 'Start'){
+				StartProxy -User $User -Url $Url
+			}
+			elseif($Button.text -eq 'Stop'){
+				StopProxy
+			}
+		})
+
+		$timer.start()
+		[void]$Form.ShowDialog()
+	}
+	$startProxyRequired=$false
+}
+Process{
+	if(($source) -and $(Get-Command Git -ErrorAction Ignore)){
+		"...Updating..."
+	}
+	if($GUI){
+		"Starting GUI"
+		GUI
+	}
+	else{
+		$stopped=$null
+		if($Status){
+			if(isProxyAlreadyRunning){"Proxy is already running"}
+		}
+		if(($Stop -or $Restart -or $ConditionalRestart) -and (isProxyAlreadyRunning)){
+			StopProxy
+			$stopped=$true
+		}
+		if($ConditionalStart -or $ConditionalRestart) {
+			if($stopped){
+				"Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection."
+				sleep 5
+			}
+			if (!(isProxyAlreadyRunning)){
+				$Start=$true
+			}
+		}
+		if($Start -or $Restart){
+			if($stopped){
+				"Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection."
+				sleep 5
+			}
+			StartProxy -User $User -Url $Url
+		}
+		"All done, exiting..."
+		sleep 5
+	}
+}
+End{
+}
