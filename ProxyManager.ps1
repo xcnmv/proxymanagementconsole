@@ -129,11 +129,11 @@ Begin{
 		[void]$Form.ShowDialog()
 	}
 	Function AutoUpdate{
-		Write-Host "...Updating..." -ForegroundColor DarkGray
 		try{
 			$loc = Get-Location | select -ExpandProperty Path
 			Set-Location $PSScriptRoot
 			if($(git status) -like "*master*"){
+				Write-Host "...Updating..." -ForegroundColor DarkGray
 				git pull origin master 1>$null 2>$null
 				Write-Host "Update successful" -ForegroundColor DarkGray
 			}
