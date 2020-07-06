@@ -29,15 +29,7 @@ param (
 	[Parameter(mandatory=$true,ParameterSetName='Restart')]
 	[Parameter(mandatory=$true,ParameterSetName='ConditionalRestart')]
 	[Parameter(mandatory=$true,ParameterSetName='GUI')]
-	[String]$User,
-	[Parameter(ParameterSetName='ConditionalStart')]
-	[Parameter(ParameterSetName='Start')]
-	[Parameter(ParameterSetName='Restart')]
-	[Parameter(ParameterSetName='ConditionalRestart')]
-	[Parameter(ParameterSetName='Stop')]
-	[Parameter(ParameterSetName='Status')]
-	[Parameter(ParameterSetName='GUI')]
-	[String]$source
+	[String]$User
 )
 
 Begin{
@@ -137,11 +129,29 @@ Begin{
 		$timer.start()
 		[void]$Form.ShowDialog()
 	}
+	Function AutoUpdate{
+		"...Updating..."
+		try{
+			$loc = Get-Location | select -ExpandProperty Path
+			Set-Location $PSScriptRoot
+			git pull origin master
+			"Update successful"
+		}
+		catch{
+			"Update failed"
+		}
+		Finally{
+			Set-Location $loc
+		}
+	}
 	$startProxyRequired=$false
 }
 Process{
+	if(!$(get-command ssh -ErrorAction Ignore)){
+		Write-Error "Missing dependencies. Install OpenSSH client and make sure it is available in the Path environmental variable"
+	}
 	if(($source) -and $(Get-Command Git -ErrorAction Ignore)){
-		"...Updating..."
+		AutoUpdate
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
 		"Starting GUI"
