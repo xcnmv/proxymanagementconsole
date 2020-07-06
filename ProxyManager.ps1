@@ -97,7 +97,6 @@ Begin{
 		$StatuValue.width                = 25
 		$StatuValue.height               = 10
 		$StatuValue.MaximumSize          = New-Object System.Drawing.Size(103,20)
-		$StatuValue.TextAlign            = "Center"
 		$StatuValue.location             = New-Object System.Drawing.Point(7,34)
 		$StatuValue.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 		
