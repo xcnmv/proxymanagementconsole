@@ -133,8 +133,10 @@ Begin{
 		try{
 			$loc = Get-Location | select -ExpandProperty Path
 			Set-Location $PSScriptRoot
-			git pull origin master 1>$null 2>$null
-			Write-Host "Update successful" -ForegroundColor DarkGray
+			if($(git status) -like "*master*"){
+				git pull origin master 1>$null 2>$null
+				Write-Host "Update successful" -ForegroundColor DarkGray
+			}
 		}
 		catch{
 			Write-Host "Update failed" -ForegroundColor Red
