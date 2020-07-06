@@ -129,12 +129,14 @@ Begin{
 		[void]$Form.ShowDialog()
 	}
 	Function AutoUpdate{
-		Write-Host "...Updating..." -ForegroundColor DarkGray
 		try{
 			$loc = Get-Location | select -ExpandProperty Path
 			Set-Location $PSScriptRoot
-			git pull origin master 1>$null 2>$null
-			Write-Host "Update successful" -ForegroundColor DarkGray
+			if($(git status) -like "*master*"){
+				Write-Host "...Updating..." -ForegroundColor DarkGray
+				git pull origin master 1>$null 2>$null
+				Write-Host "Update successful" -ForegroundColor DarkGray
+			}
 		}
 		catch{
 			Write-Host "Update failed" -ForegroundColor Red
@@ -149,7 +151,7 @@ Process{
 	if(!$(get-command ssh -ErrorAction Ignore)){
 		Write-Error "Missing dependencies. Install OpenSSH client and make sure it is available in the Path environmental variable"
 	}
-	if($(Get-Command Git -ErrorAction Ignore) -and ($(git status) -like "*master*")){
+	if($(Get-Command Git -ErrorAction Ignore)){
 		AutoUpdate
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
