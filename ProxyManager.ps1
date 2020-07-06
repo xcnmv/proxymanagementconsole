@@ -160,7 +160,12 @@ Process{
 	else{
 		$stopped=$null
 		if($Status){
-			if(isProxyAlreadyRunning){"Proxy is already running"}
+			if(isProxyAlreadyRunning){
+				"Proxy is already running"
+			}
+			else{
+				"Proxy is not detected"
+			}
 		}
 		if(($Stop -or $Restart -or $ConditionalRestart) -and (isProxyAlreadyRunning)){
 			StopProxy
