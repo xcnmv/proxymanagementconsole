@@ -134,7 +134,7 @@ Begin{
 		try{
 			$loc = Get-Location | select -ExpandProperty Path
 			Set-Location $PSScriptRoot
-			git pull origin master
+			git pull origin master | out-null
 			"Update successful"
 		}
 		catch{
