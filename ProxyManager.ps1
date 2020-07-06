@@ -150,7 +150,7 @@ Process{
 	if(!$(get-command ssh -ErrorAction Ignore)){
 		Write-Error "Missing dependencies. Install OpenSSH client and make sure it is available in the Path environmental variable"
 	}
-	if(($source) -and $(Get-Command Git -ErrorAction Ignore)){
+	if($(Get-Command Git -ErrorAction Ignore)){
 		AutoUpdate
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
