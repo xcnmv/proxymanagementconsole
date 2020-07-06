@@ -42,7 +42,7 @@ param (
 
 Begin{
 	if($PSCmdlet.ParameterSetName -contains 'Help'){
-		Get-Help $(Join-Path $PSScriptRoot $MyInvocation.MyCommand.Name) -ShowWindow
+		Get-Help $(Join-Path $PSScriptRoot $MyInvocation.MyCommand.Name) -Full
 		EXIT 2
 	}
 	Function StopProxy{
@@ -143,7 +143,7 @@ Process{
 	if(($source) -and $(Get-Command Git -ErrorAction Ignore)){
 		"...Updating..."
 	}
-	if($GUI){
+	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
 		"Starting GUI"
 		GUI
 	}
