@@ -72,7 +72,6 @@ Begin{
 		$Form.text                       = "Proxy Management Console"
 		$Form.TopMost                    = $false
 		$Form.MaximizeBox				 = $false
-		$Form.MinimizeBox				 = $false
 		$Form.FormBorderStyle			 = 'FixedSingle'
 
 		$CheckBox						 = New-Object system.Windows.Forms.CheckBox
