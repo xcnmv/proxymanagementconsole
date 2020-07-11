@@ -47,7 +47,8 @@ Begin{
 			[String]$User
 		)
 		Write-Host "Starting Proxy Connection" -ForegroundColor DarkGreen
-		& ssh -D 1337 -q -C -N -f $($user)@$($url)
+		$at='@'
+		ssh -D 1337 -q -C -N -f $($user)$at$($url)
 	}
 	Function isProxyAlreadyRunning{
 		if(Get-Process *ssh*){
