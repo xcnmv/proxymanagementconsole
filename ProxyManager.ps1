@@ -47,7 +47,7 @@ Begin{
 			[String]$User
 		)
 		Write-Host "Starting Proxy Connection" -ForegroundColor DarkGreen
-		ssh -D 1337 -q -C -N -f $($user)@$($url)
+		& ssh -D 1337 -q -C -N -f $($user)@$($url)
 	}
 	Function isProxyAlreadyRunning{
 		if(Get-Process *ssh*){
@@ -72,7 +72,6 @@ Begin{
 		$Form.text                       = "Proxy Management Console"
 		$Form.TopMost                    = $false
 		$Form.MaximizeBox				 = $false
-		$Form.MinimizeBox				 = $false
 		$Form.FormBorderStyle			 = 'FixedSingle'
 
 		$CheckBox						 = New-Object system.Windows.Forms.CheckBox
