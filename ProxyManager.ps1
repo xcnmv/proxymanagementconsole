@@ -49,7 +49,14 @@ Begin{
 
 		Write-Host "Starting Proxy Connection" -ForegroundColor DarkGreen
 		$at='@'
-		ssh -D 1337 -q -C -N -f "$($User)$at$($Url)"
+
+        #return $(Start-Process -WindowStyle Hidden -PassThru cmd "/C START /B ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)")
+        return $(Start-Process -WindowStyle Hidden -PassThru ssh "-D 1337 -q -C -N -f $($User)$at$($Url)")
+        #Start-Process -NoNewWindow ssh "-D 1337 -q -C -N -f $($User)$at$($Url)"
+        #$pclass = [wmiclass]'root\cimv2:Win32_Process'
+        #$new_pid = $pclass.Create("ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)", '.', $null).ProcessId
+		#$new_pid = $pclass.Create("cmd /C START /B ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)", '.', $null).ProcessId
+		#[Diagnostics.Process]::Start("cmd.exe", "/C ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)")
 	}
 	Function isProxyAlreadyRunning{
 		if(Get-Process *ssh*){
@@ -119,7 +126,7 @@ Begin{
 
 		$Button.Add_Click({ 
 			if($Button.text -eq 'Start'){
-				StartProxy -User $User -Url $Url
+				StartProxy -User $User -Url $Url | out-null
 			}
 			elseif($Button.text -eq 'Stop'){
 				StopProxy
@@ -146,7 +153,6 @@ Begin{
 			Set-Location $loc
 		}
 	}
-	$startProxyRequired=$false
 }
 Process{
 	if(!$(get-command ssh -ErrorAction Ignore)){
@@ -157,7 +163,7 @@ Process{
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
 		Write-Host "Starting GUI" -ForegroundColor DarkGray
-		GUI
+		GUI -Url $Url -User $User
 	}
 	else{
 		$stopped=$null
@@ -187,7 +193,7 @@ Process{
 				Write-Host "Proxy was stopped during this run.`r`nSleep 5 seconds before starting a new connection." -ForegroundColor DarkGray
 				sleep 5
 			}
-			StartProxy -User $User -Url $Url
+			StartProxy -User $User -Url $Url | out-null
 		}
 		Write-Host "All done, exiting..." -ForegroundColor DarkGray
 		sleep 5
