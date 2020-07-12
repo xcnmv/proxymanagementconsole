@@ -58,6 +58,15 @@ Begin{
 		#$new_pid = $pclass.Create("cmd /C START /B ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)", '.', $null).ProcessId
 		#[Diagnostics.Process]::Start("cmd.exe", "/C ssh.exe -D 1337 -q -C -N -f $($User)$at$($Url)")
 	}
+    Function StartChrome{
+        param(
+    		[String]$ChromePath
+        )
+        
+        $pclass = [wmiclass]'root\cimv2:Win32_Process'
+        return $pclass.Create("$ChromePath --user-data-dir=""$($ENV:USERPROFILE)\proxy-profile"" --proxy-server='socks5://localhost:1337' https://www.wolframalpha.com/input/?i=what%27s+my+ip+address", '.', $null).ProcessId
+        #return $(Start-Process -WindowStyle Hidden -PassThru $ChromePath "--user-data-dir='$($ENV:USERPROFILE)\proxy-profile' --proxy-server='socks5://localhost:1337' https://www.wolframalpha.com/input/?i=what%27s+my+ip+address")
+    }
 	Function isProxyAlreadyRunning{
 		if(Get-Process *ssh*){
 			return $true
@@ -66,18 +75,19 @@ Begin{
 	Function GUI{
 		param(
 			[String]$Url,
-			[String]$User
+			[String]$User,
+			[String]$ChromePath
 		)
 		<# This form was created using POSHGUI.com  a free online gui designer for PowerShell
 		.NAME
 		    Proxy Management Console
 		#>
-
+        if(test-path $ChromePath){$verticalPositionCorrection = 200}else{$verticalPositionCorrection=0}
 		Add-Type -AssemblyName System.Windows.Forms
 		[System.Windows.Forms.Application]::EnableVisualStyles()
 
 		$Form                            = New-Object system.Windows.Forms.Form
-		$Form.ClientSize                 = New-Object System.Drawing.Point(224,61)
+		$Form.ClientSize                 = New-Object System.Drawing.Point($(224+$verticalPositionCorrection),61)
 		$Form.text                       = "Proxy Management Console"
 		$Form.TopMost                    = $false
 		$Form.MaximizeBox				 = $false
@@ -95,9 +105,16 @@ Begin{
 		$Button                          = New-Object system.Windows.Forms.Button
 		$Button.text                     = "... checking ..."
 		$Button.width                    = 100
-		$Button.height                   = 30
-		$Button.location                 = New-Object System.Drawing.Point(117,24)
+		$Button.height                   = 25
+		$Button.location                 = New-Object System.Drawing.Point($(117+$verticalPositionCorrection),29)
 		$Button.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
+
+		$StartChromeButton                          = New-Object system.Windows.Forms.Button
+		$StartChromeButton.text                     = "Start Chrome with Proxy"
+		$StartChromeButton.width                    = $($verticalPositionCorrection-14)
+		$StartChromeButton.height                   = 25
+		$StartChromeButton.location                 = New-Object System.Drawing.Point(7,29)
+		$StartChromeButton.Font                     = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 	
 		$StatuValue                      = New-Object system.Windows.Forms.Label
 		$StatuValue.text                 = "... checking ..."
@@ -105,7 +122,7 @@ Begin{
 		$StatuValue.width                = 25
 		$StatuValue.height               = 10
 		$StatuValue.MaximumSize          = New-Object System.Drawing.Size(103,20)
-		$StatuValue.location             = New-Object System.Drawing.Point(7,34)
+		$StatuValue.location             = New-Object System.Drawing.Point($(7+$verticalPositionCorrection),34)
 		$StatuValue.Font                 = New-Object System.Drawing.Font('Microsoft Sans Serif',10)
 		
 		$timer = New-Object System.Windows.Forms.Timer
@@ -118,19 +135,27 @@ Begin{
 			}
 			else{
 				$StatuValue.text = "Proxy not found"
-				$Button.text = 'Start'
+				$Button.text = 'Connect'
 			}
 			})
-
-		$Form.controls.AddRange(@($Button,$StatuValue,$CheckBox))
+        
+        $FormParams=@($Button,$StatuValue,$CheckBox)
+        if($verticalPositionCorrection){        
+            $FormParams+=$StartChromeButton
+        }
+		$Form.controls.AddRange(@($FormParams))
 
 		$Button.Add_Click({ 
-			if($Button.text -eq 'Start'){
+			if($Button.text -eq 'Connect'){
 				StartProxy -User $User -Url $Url | out-null
 			}
 			elseif($Button.text -eq 'Stop'){
 				StopProxy
 			}
+		})
+
+		$StartChromeButton.Add_Click({ 
+			StartChrome -ChromePath $ChromePath | out-null
 		})
 
 		$timer.start()
@@ -153,6 +178,7 @@ Begin{
 			Set-Location $loc
 		}
 	}
+    $ChromePath='C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
 }
 Process{
 	if(!$(get-command ssh -ErrorAction Ignore)){
@@ -163,7 +189,7 @@ Process{
 	}
 	if($GUI -and $PSVersionTable.Platform -ne 'Unix'){
 		Write-Host "Starting GUI" -ForegroundColor DarkGray
-		GUI -Url $Url -User $User
+		GUI -Url $Url -User $User -ChromePath $ChromePath
 	}
 	else{
 		$stopped=$null
