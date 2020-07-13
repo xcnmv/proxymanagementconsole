@@ -82,7 +82,7 @@ Begin{
 		.NAME
 		    Proxy Management Console
 		#>
-        if(test-path $ChromePath){$verticalPositionCorrection = 200}else{$verticalPositionCorrection=0}
+        if(test-path $ChromePath -ErrorAction Ignore){$verticalPositionCorrection = 200}else{$verticalPositionCorrection=0}
 		Add-Type -AssemblyName System.Windows.Forms
 		[System.Windows.Forms.Application]::EnableVisualStyles()
 
@@ -178,6 +178,7 @@ Begin{
 			Set-Location $loc
 		}
 	}
+	$ChromePath=$null
 	$ChromePaths=@()
 	$ChromePaths+='C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
 	$ChromePaths+='C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
