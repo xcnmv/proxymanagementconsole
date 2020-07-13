@@ -178,7 +178,15 @@ Begin{
 			Set-Location $loc
 		}
 	}
-    $ChromePath='C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
+	$ChromePaths=@()
+	$ChromePaths+='C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
+	$ChromePaths+='C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+	$ChromePaths | %{
+		if(Test-Path $_){
+			$ChromePath=$_
+			continue
+		}
+	}
 }
 Process{
 	if(!$(get-command ssh -ErrorAction Ignore)){
