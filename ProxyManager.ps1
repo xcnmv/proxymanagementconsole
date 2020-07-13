@@ -187,7 +187,7 @@ Begin{
 	$ChromePaths | %{
 		if(Test-Path $_){
 			$ChromePath=$_
-			continue
+			#continue
 		}
 	}
 }
