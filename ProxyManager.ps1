@@ -132,12 +132,14 @@ Begin{
 			if(isProxyAlreadyRunning){
 				$StatuValue.text = "Proxy is Active"
 				$Button.text = 'Stop'
+				$StartChromeButton.enabled = $true
 			}
 			else{
 				$StatuValue.text = "Proxy not found"
 				$Button.text = 'Connect'
+				$StartChromeButton.enabled = $false
 			}
-			})
+		})
         
         $FormParams=@($Button,$StatuValue,$CheckBox)
         if($verticalPositionCorrection){        
