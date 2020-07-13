@@ -64,7 +64,7 @@ Begin{
         )
         
         $pclass = [wmiclass]'root\cimv2:Win32_Process'
-        return $pclass.Create("$ChromePath --user-data-dir=""$($ENV:USERPROFILE)\proxy-profile"" --proxy-server='socks5://localhost:1337' https://www.wolframalpha.com/input/?i=what%27s+my+ip+address", '.', $null).ProcessId
+        return $pclass.Create("$ChromePath --user-data-dir=""$($ENV:USERPROFILE)\proxy-profile"" --proxy-server=""socks5://localhost:1337"" https://www.wolframalpha.com/input/?i=what%27s+my+ip+address", '.', $null).ProcessId
         #return $(Start-Process -WindowStyle Hidden -PassThru $ChromePath "--user-data-dir='$($ENV:USERPROFILE)\proxy-profile' --proxy-server='socks5://localhost:1337' https://www.wolframalpha.com/input/?i=what%27s+my+ip+address")
     }
 	Function isProxyAlreadyRunning{
