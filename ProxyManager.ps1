@@ -180,10 +180,11 @@ Begin{
 			Set-Location $loc
 		}
 	}
-	$ChromePath=$null
+	$ChromePath="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 	$ChromePaths=@()
 	$ChromePaths+='C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe'
 	$ChromePaths+='C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'
+	$ChromePaths+="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 	$ChromePaths | %{
 		if(Test-Path $_){
 			$ChromePath=$_
